@@ -1,71 +1,72 @@
 package main
 
 import (
-	// "errors"
+	"context"
 	"encoding/hex"
 	"fmt"
-	"context"
 
-	// secp256k1 "github.com/btcsuite/btcd/btcec"
-	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/client/flags"
+	"github.com/cosmos/cosmos-sdk/client/tx"
+	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
+	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
+	"github.com/cosmos/cosmos-sdk/simapp"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/tx/signing"
+	authsigning "github.com/cosmos/cosmos-sdk/x/auth/signing"
+	xauthsigning "github.com/cosmos/cosmos-sdk/x/auth/signing"
+	txtypes "github.com/cosmos/cosmos-sdk/x/auth/tx"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/davecgh/go-spew/spew"
 	rpchttp "github.com/tendermint/tendermint/rpc/client/http"
-	coregrpc "github.com/tendermint/tendermint/rpc/grpc"
-	"github.com/cosmos/cosmos-sdk/client/tx"
-	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-	"github.com/cosmos/cosmos-sdk/simapp"
-	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
-	"github.com/cosmos/cosmos-sdk/types/tx/signing"
-	xauthsigning "github.com/cosmos/cosmos-sdk/x/auth/signing"
-	// "github.com/cosmos/cosmos-sdk/codec/legacy"
+	"google.golang.org/grpc"
 )
 
 type Client interface {
 	LatestBlockHeight(context.Context) (int, error)
 	CountTx(context.Context, int) (int, error)
-	// GetNonce(context.Context) (int, error)
-	// SendTx() error
+	Nonce(context.Context, string) (uint64, error)
 }
 
 var (
 	_ Client = (*CosmosClient)(nil)
+
+	accNums = make(map[string]uint64, 3)
 )
 
 type CosmosClient struct {
+	conn *grpc.ClientConn
+
 	clientHTTP *rpchttp.HTTP
-	clientGRPC coregrpc.BroadcastAPIClient
+	authClient authtypes.QueryClient
+
+	cdc      *codec.ProtoCodec
+	txConfig client.TxConfig
 }
 
 const (
-	DefalultRPCURI = "tcp://localhost:26657"
-	DefaultGRPCURI = "tcp://localhost:36656"
-	HomeDir = "/Users/tak/Documents/minden/cosmminden/.chaindata"
-	ChainID = "mchain"
-	KeyringBackend = "test"
+	DefalultRPCURI       = "tcp://localhost:26657"
+	HomeDir              = "/Users/tak/Documents/minden/cosmminden/.chaindata"
+	ChainID              = "mchain"
+	KeyringBackend       = "test"
+	AccountAddressPrefix = "minden"
+	Denom                = "mtc"
 )
 
+func init() {
+	config := sdk.GetConfig()
+	config.SetBech32PrefixForAccount(AccountAddressPrefix, AccountAddressPrefix+sdk.PrefixPublic)
+	config.Seal()
+}
 
-func New(rpcURI string, grpcURI string) (CosmosClient, error) {
-	// s, ok := setting.(Setting); !ok {
-	// 	return cosmClient, fmt.Errorf("unexpected setting type, setting: %+v", s)
-	// }
-	// initClientCtx := client.Context{}.
-	// 	WithJSONMarshaler(encodingConfig.Marshaler).
-	// 	WithInterfaceRegistry(encodingConfig.InterfaceRegistry).
-	// 	WithTxConfig(encodingConfig.TxConfig).
-	// 	WithLegacyAmino(encodingConfig.Amino).
-	// 	WithInput(os.Stdin).
-	// 	WithAccountRetriever(types.AccountRetriever{}).
-	// 	WithBroadcastMode(flags.BroadcastBlock).
-	// 	WithHomeDir(defaultNodeHome).
-	// 	WithViper("")
+func New(rpcURI string) (CosmosClient, error) {
 	var (
-		c = CosmosClient{}
-		err error
+		c      = CosmosClient{}
+		encCfg = simapp.MakeTestEncodingConfig()
+		err    error
 	)
-
 
 	if rpcURI == "" {
 		rpcURI = DefalultRPCURI
@@ -75,15 +76,14 @@ func New(rpcURI string, grpcURI string) (CosmosClient, error) {
 		return c, err
 	}
 
-	// clientCtx := DefaultContext()
-
-	// c.ctx = clientCtx.WithClient(c.clientHTTP)
-
-	if grpcURI == "" {
-		grpcURI = DefaultGRPCURI
+	if c.conn, err = grpc.Dial("127.0.0.1:9090", grpc.WithInsecure()); err != nil {
+		return c, err
 	}
 
-	c.clientGRPC = coregrpc.StartGRPCClient(grpcURI)
+	c.authClient = authtypes.NewQueryClient(c.conn)
+
+	c.cdc = codec.NewProtoCodec(encCfg.InterfaceRegistry)
+	c.txConfig = txtypes.NewTxConfig(c.cdc, txtypes.DefaultSignModes)
 
 	return c, nil
 }
@@ -105,168 +105,126 @@ func (c CosmosClient) CountTx(ctx context.Context, height int) (int, error) {
 	return int(res.TotalCount), nil
 }
 
-// func (c CosmosClient) SendCoin(to sdk.AccAddress, amount sdk.Coins, nonce uint64) error {
-// 	msg := sdk.NewMsgCreateConsumer(c.ctx.GetFromAddress(), to, amount)
-// 	if err := msg.ValidateBasic(); err != nil {
-// 		return err
-// 	}
+func (c CosmosClient) Nonce(ctx context.Context, address string) (uint64, error) {
+	acc, err := c.Account(ctx, address)
+	if err != nil {
+		return 0, err
+	}
+	return acc.GetSequence(), nil
+}
 
-// 	txf := c.TxFactory(nonce)
+func (c CosmosClient) Account(ctx context.Context, address string) (acc authtypes.AccountI, err error) {
+	req := &authtypes.QueryAccountRequest{Address: address}
+	res, err := c.authClient.Account(ctx, req)
+	if err != nil {
+		return
+	}
 
-// 	if err = tx.BroadcastTx(c.ctx, txf, msg); err != nil {
-// 		return err
-// 	}
+	if err = c.cdc.UnpackAny(res.GetAccount(), &acc); err != nil {
+		return
+	}
 
-// 	return nil
-// }
+	return
+}
 
-// func DefaultContext(from string) client.Context {
-// 	cmd := &cobra.Command{}
-// 	cmd.Flags().String(flags.HomeDir, HomeDir, "")
-// 	cmd.Flags().String(flags.FlagChainID, ChainID, "")
-// 	cmd.Flags().String(flags.FlagKeyringBackend, KeyringBackend, "")
-// 	cmd.Flags().String(flags.FlagBroadcastMode, flags.BroadcastAsync, "")
-// 	cmd.Flags().Bool(flags.FlagSkipConfirmation, true, "")
-// 	cmd.Flags().String(flags.From, from, "")
+func (c CosmosClient) Close() {
+	c.conn.Close()
+}
 
-// 	return clinet.GetClientTxContext(cmd)
-// }
+func PrivFromString(privStr string) (priv cryptotypes.PrivKey, err error) {
+	priBytes, err := hex.DecodeString(privStr)
+	if err != nil {
+		return
+	}
+	priv = &secp256k1.PrivKey{Key: priBytes}
+	return
+}
 
-func (c CosmosClient) SendTx() error {
-	priStr := "3b2eb70cf00a779c4bfed132e0fb3f7f982013132d86e344b0e97c7507d0d7a4"
-  priBytes, err := hex.DecodeString(priStr)
-  if err != nil {
-  	return err
-  }
-  var priv cryptotypes.PrivKey
-  priv = &secp256k1.PrivKey{Key: priBytes}
-  // // priv2, _ := secp256k1.PrivKeyFromBytes(secp256k1.S256(), priBytes)
-  // spew.Dump("priv2", priv2)
-  // priv, err := legacy.PrivKeyFromBytes(priBytes)
-  // if err != nil {
-  // 	return err
-  // }
-  // spew.Dump("priv", priv)
-  // priv2, _ := priv.(cryptotypes.PrivKey)
-  privs := []cryptotypes.PrivKey{priv}
-  accNums:= []uint64{1} // The accounts' account numbers
-  accSeqs:= []uint64{4} // The accounts' sequence numbers
+func AccAddressFromPriv(priv cryptotypes.PrivKey) sdk.AccAddress {
+	return sdk.AccAddress(priv.PubKey().Address().Bytes())
+}
 
-  // pub, err := cryptocodec.FromTmPubKeyInterface(priv.PubKey())
-  // if err != nil {
-  // 	return err
-  // }
+func (c *CosmosClient) BuildTx(msg sdk.Msg, priv cryptotypes.PrivKey, accSeq uint64) (authsigning.Tx, error) {
+	var (
+		txBuilder = c.txConfig.NewTxBuilder()
+		accNum    = accNums[AccAddressFromPriv(priv).String()]
+	)
 
-  config := sdk.GetConfig()
-	config.SetBech32PrefixForAccount("minden", "minden"+sdk.PrefixPublic)
-	config.Seal()
+	err := txBuilder.SetMsgs(msg)
+	if err != nil {
+		return nil, err
+	}
+	txBuilder.SetGasLimit(uint64(flags.DefaultGasLimit))
 
-  from := sdk.AccAddress(priv.PubKey().Address().Bytes())
+	// First round: we gather all the signer infos. We use the "set empty signature" hack to do that.
+	if err = txBuilder.SetSignatures(signing.SignatureV2{
+		PubKey: priv.PubKey(),
+		Data: &signing.SingleSignatureData{
+			SignMode:  c.txConfig.SignModeHandler().DefaultMode(),
+			Signature: nil,
+		},
+		Sequence: accSeq,
+	}); err != nil {
+		return nil, err
+	}
 
-  toStr := "minden1hp5cugfmh8e57pqggaukmjhrsfx2lxt9nthf83"
- //  to, err := sdk.AccAddressFromBech32(toStr)
-	// if err != nil {
-	// 	return err
-	// }
-	bz, err := sdk.GetFromBech32(toStr, "minden")
+	// Second round: all signer infos are set, so each signer can sign.
+	signerData := xauthsigning.SignerData{
+		ChainID:       ChainID,
+		AccountNumber: accNum,
+		Sequence:      accSeq,
+	}
+	sigV2, err := tx.SignWithPrivKey(
+		c.txConfig.SignModeHandler().DefaultMode(), signerData,
+		txBuilder, priv, c.txConfig, accSeq)
+	if err != nil {
+		return nil, err
+	}
+	if err = txBuilder.SetSignatures(sigV2); err != nil {
+		return nil, err
+	}
+
+	return txBuilder.GetTx(), nil
+}
+
+func (c *CosmosClient) SendTx(ctx context.Context, privStr string, seq uint64, to sdk.AccAddress, amount int64) error {
+	priv, err := PrivFromString(privStr)
 	if err != nil {
 		return err
 	}
 
-	to := sdk.AccAddress(bz)
+	var (
+		from  = AccAddressFromPriv(priv)
+		coins = sdk.NewCoins(sdk.NewInt64Coin(Denom, amount))
+		msg   = banktypes.NewMsgSend(from, to, coins)
+	)
+	tx, err := c.BuildTx(msg, priv, seq)
+	if err != nil {
+		return err
+	}
 
-	encCfg := simapp.MakeTestEncodingConfig()
-  txBuilder := encCfg.TxConfig.NewTxBuilder()
-  msg := banktypes.NewMsgSend(from, to, sdk.NewCoins(sdk.NewInt64Coin("mtc", 100)))
+	txBytes, err := c.txConfig.TxEncoder()(tx)
+	if err != nil {
+		return err
+	}
 
-  err = txBuilder.SetMsgs(msg)
-  if err != nil {
-      return err
-  }
-  txBuilder.SetGasLimit(1000000)
-  // txBuilder.SetFeeAmount(sdk.NewInt64Coin("mtc", 1000))
-
-  // First round: we gather all the signer infos. We use the "set empty
-  // signature" hack to do that.
-  var sigsV2 []signing.SignatureV2
-  for i, priv := range privs {
-      sigV2 := signing.SignatureV2{
-          PubKey: priv.PubKey(),
-          Data: &signing.SingleSignatureData{
-              SignMode:  encCfg.TxConfig.SignModeHandler().DefaultMode(),
-              Signature: nil,
-          },
-          Sequence: accSeqs[i],
-      }
-
-      sigsV2 = append(sigsV2, sigV2)
-  }
-  err = txBuilder.SetSignatures(sigsV2...)
-  if err != nil {
-      return err
-  }
-
-  // Second round: all signer infos are set, so each signer can sign.
-  sigsV2 = []signing.SignatureV2{}
-  for i, priv := range privs {
-      signerData := xauthsigning.SignerData{
-          ChainID:       ChainID,
-          AccountNumber: accNums[i],
-          Sequence:      accSeqs[i],
-      }
-      sigV2, err := tx.SignWithPrivKey(
-          encCfg.TxConfig.SignModeHandler().DefaultMode(), signerData,
-          txBuilder, priv, encCfg.TxConfig, accSeqs[i])
-      if err != nil {
-          return err
-      }
-
-      sigsV2 = append(sigsV2, sigV2)
-  }
-  err = txBuilder.SetSignatures(sigsV2...)
-  if err != nil {
-      return err
-  }
-
-  // Generated Protobuf-encoded bytes.
-  txBytes, err := encCfg.TxConfig.TxEncoder()(txBuilder.GetTx())
-  if err != nil {
-      return err
-  }
-
-  // // Generate a JSON string.
-  // txJSONBytes, err := encCfg.TxConfig.TxJSONEncoder()(txBuilder.GetTx())
-  // if err != nil {
-  //     return err
-  // }
-  // txJSON := string(txJSONBytes)
-
-  // res, err := c.clientHTTP.BroadcastTxAsync(context.Background(), txBytes)
-  res, err := c.clientHTTP.BroadcastTxSync(context.Background(), txBytes)
-  if errRes := client.CheckTendermintError(err, txBytes); errRes != nil {
-  	spew.Dump(errRes)
-  	panic("hoge!")
+	res, err := c.clientHTTP.BroadcastTxSync(context.Background(), txBytes)
+	if errRes := client.CheckTendermintError(err, txBytes); errRes != nil {
+		return err
 	}
 
 	spew.Dump(res)
-
 	return nil
 }
 
-
-// func (c CosmosClient) TxFactory(accountNumber uint64) tx.Factory {
-// 	fs := pflag.NewFlagSet("", pflag.ContinueOnError)
-// 	fs.Uint16(flags.FlagAccountNumber, accountNumber, "")
-// 	return tx.NewFactoryCLI(c.ctx, fs)
-// }
-
-
 func main() {
-	// ctx := context.Background()
-	c, err := New("", "")
+	ctx := context.Background()
+	c, err := New("")
 	if err != nil {
 		panic(err.Error())
 	}
+	defer c.Close()
+
 	// res, err := c.LatestBlockHeight(ctx)
 	// if err != nil {
 	// 	panic(err.Error())
@@ -276,7 +234,27 @@ func main() {
 	// 	panic(err.Error())
 	// }
 	// spew.Dump(res2)
-	err = c.SendTx()
+
+	addr := "minden1ma5xdsl8jkju45fxv7tmzsvrya6uaqhsdfxde6"
+	acc, err := c.Account(ctx, addr)
+	if err != nil {
+		panic(err.Error())
+	}
+	accNums[addr] = acc.GetAccountNumber()
+
+	seq, err := c.Nonce(ctx, addr)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	priStr := "3b2eb70cf00a779c4bfed132e0fb3f7f982013132d86e344b0e97c7507d0d7a4"
+	toStr := "minden1hp5cugfmh8e57pqggaukmjhrsfx2lxt9nthf83"
+	bz, err := sdk.GetFromBech32(toStr, "minden")
+	if err != nil {
+		panic(err.Error())
+	}
+	to := sdk.AccAddress(bz)
+	err = c.SendTx(ctx, priStr, seq, to, 10)
 	if err != nil {
 		panic(err.Error())
 	}
