@@ -25,7 +25,7 @@ func StartTPSMeasuring(ctx context.Context, client Client, closing, idlingDurati
 			break
 		}
 
-		if count, lastBlock, err = countTx(client, lastBlock); err != nil {
+		if count, lastBlock, err = countTx(ctx, client, lastBlock); err != nil {
 			if errors.Is(err, ErrNotNewBlock) {
 				// sleep a bit
 				time.Sleep(1 * time.Second)
@@ -63,8 +63,7 @@ func StartTPSMeasuring(ctx context.Context, client Client, closing, idlingDurati
 	return nil
 }
 
-func countTx(client Client, lastBlock uint64) (int, uint64, error) {
-	ctx := context.Background()
+func countTx(ctx context.Context, client Client, lastBlock uint64) (int, uint64, error) {
 	height, err := client.LatestBlockHeight(ctx)
 	if err != nil {
 		return 0, lastBlock, errors.Wrap(err, "err LatestBlockHeight")

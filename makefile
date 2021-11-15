@@ -6,4 +6,4 @@ fmt:
 	gofmt -w -l .
 
 test:
-	go test ./... -v -race
+	go test ./tps/... -v -race

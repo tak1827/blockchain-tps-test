@@ -21,6 +21,7 @@ func NewWallet(ctx context.Context, client Client, privs []string, addrs []strin
 	}
 
 	w.privs = privs
+	w.nonces = make(map[string]*Nonce, len(privs))
 
 	for i := range privs {
 		var nonce Nonce
