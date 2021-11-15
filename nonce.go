@@ -3,16 +3,14 @@ package main
 import (
 	"context"
 	"sync/atomic"
-
-	"github.com/min-sys/tracking-contract/cli/eth"
 )
 
 type Nonce struct {
 	current uint64
 }
 
-func NewNonce(ctx context.Context, client *eth.Client) (Nonce, error) {
-	current, err := client.Nonce(ctx)
+func NewNonce(ctx context.Context, client Client, addr string) (Nonce, error) {
+	current, err := client.Nonce(ctx, addr)
 	if err != nil {
 		return Nonce{}, err
 	}

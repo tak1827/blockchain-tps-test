@@ -7,16 +7,15 @@ import (
 	"time"
 
 	// "github.com/davecgh/go-spew/spew"
-	"github.com/min-sys/tracking-contract/cli/eth"
 	"github.com/pkg/errors"
 )
 
-func StartTPSMeasuring(client *eth.Client, closing, idlingDuration *uint32, logger Logger) error {
+func StartTPSMeasuring(ctx context.Context, client Client, closing, idlingDuration *uint32, logger Logger) error {
 	var (
-		canMesure bool
+		idling    = true
 		startedAd time.Time
-		total     uint
-		count     uint
+		total     int
+		count     int
 		lastBlock uint64
 		err       error
 	)
@@ -33,27 +32,27 @@ func StartTPSMeasuring(client *eth.Client, closing, idlingDuration *uint32, logg
 				continue
 			}
 			if errors.Is(err, context.DeadlineExceeded) {
-				logger.Warn(fmt.Sprintf("timeout of countTx, setting: %v", client.Setting().Timeout))
+				logger.Warn("timeout of countTx")
 				continue
 			}
 			//TODO: handle timeout error
 			return errors.Wrap(err, "err CountTx")
 		}
 
-		if !canMesure {
+		if idling {
 			if count > 0 {
-				canMesure = true
+				idling = false
 				startedAd = time.Now()
 			}
 			continue
 		}
 
-		pendingTx, err := client.TxpoolPendingTxCount(nil)
+		pendingTx, err := client.CountPendingTx(ctx)
 		if err != nil {
-			return errors.Wrap(err, "err TxpoolPendingTxCount")
+			return errors.Wrap(err, "err CountPendingTx")
 		}
 
-		NextIdlingDuration(idlingDuration, uint32(count), uint32(pendingTx))
+		// NextIdlingDuration(idlingDuration, uint32(count), uint32(pendingTx))
 
 		total += count
 		elapsed := time.Now().Sub(startedAd).Seconds()
@@ -64,19 +63,20 @@ func StartTPSMeasuring(client *eth.Client, closing, idlingDuration *uint32, logg
 	return nil
 }
 
-func countTx(client *eth.Client, lastBlock uint64) (uint, uint64, error) {
-	header, err := client.BlockHeader(nil)
+func countTx(client Client, lastBlock uint64) (int, uint64, error) {
+	ctx := context.Background()
+	height, err := client.LatestBlockHeight(ctx)
 	if err != nil {
-		return 0, lastBlock, errors.Wrap(err, "err BlockHash")
+		return 0, lastBlock, errors.Wrap(err, "err LatestBlockHeight")
 	}
-	if header.Number.Uint64() <= lastBlock {
+	if height <= lastBlock {
 		return 0, lastBlock, ErrNotNewBlock
 	}
 
-	count, err := client.TxCount(nil, header.Hash())
+	count, err := client.CountTx(ctx, height)
 	if err != nil {
 		return 0, lastBlock, errors.Wrap(err, "err TxCount")
 	}
 
-	return count, header.Number.Uint64(), nil
+	return count, height, nil
 }

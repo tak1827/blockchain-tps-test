@@ -1,30 +1,25 @@
 package main
 
 import (
-	"math/big"
 	"sync"
 	"testing"
-
-	"github.com/min-sys/tracking-contract/cli/eth"
 )
 
 func TestPush(t *testing.T) {
-	addr, _ := eth.GenerateAddr()
-
 	var (
 		queue = Queue{}
 		wg    = &sync.WaitGroup{}
 		tasks = []Task{
-			&ETHSendingTask{amount: big.NewInt(1), to: addr},
-			&ETHSendingTask{amount: big.NewInt(2), to: addr},
-			&ETHSendingTask{amount: big.NewInt(3), to: addr},
-			&ETHSendingTask{amount: big.NewInt(4), to: addr},
-			&ETHSendingTask{},
-			&ETHSendingTask{},
-			&ETHSendingTask{},
-			&ETHSendingTask{},
-			&ETHSendingTask{},
-			&ETHSendingTask{},
+			&BasicTask{},
+			&BasicTask{},
+			&BasicTask{},
+			&BasicTask{},
+			&BasicTask{},
+			&BasicTask{},
+			&BasicTask{},
+			&BasicTask{},
+			&BasicTask{},
+			&BasicTask{},
 		}
 		pararelCount = 5
 	)
@@ -47,21 +42,19 @@ func TestPush(t *testing.T) {
 }
 
 func TestShift(t *testing.T) {
-	addr, _ := eth.GenerateAddr()
-
 	var (
 		queue = Queue{
 			Tasks: []Task{
-				&ETHSendingTask{amount: big.NewInt(1), to: addr},
-				&ETHSendingTask{amount: big.NewInt(2), to: addr},
-				&ETHSendingTask{amount: big.NewInt(3), to: addr},
-				&ETHSendingTask{amount: big.NewInt(4), to: addr},
-				&ETHSendingTask{},
-				&ETHSendingTask{},
-				&ETHSendingTask{},
-				&ETHSendingTask{},
-				&ETHSendingTask{},
-				&ETHSendingTask{},
+				&BasicTask{},
+				&BasicTask{},
+				&BasicTask{},
+				&BasicTask{},
+				&BasicTask{},
+				&BasicTask{},
+				&BasicTask{},
+				&BasicTask{},
+				&BasicTask{},
+				&BasicTask{},
 			},
 		}
 
