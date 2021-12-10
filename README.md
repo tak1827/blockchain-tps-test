@@ -23,7 +23,9 @@ The sample codes are in`samples` directory.
 - Mesured by Macbook pro 2020
   - CPU: 1.4 GHz Quad-Core Intel Core i5
   - MEM: 16 GB
+
 **Result**
+
 TPS: around `750`
 ```sh
 gtime -f '%P %Uu %Ss %er %MkB %C' "time" ./recorder
@@ -57,7 +59,9 @@ gtime -f '%P %Uu %Ss %er %MkB %C' "time" ./recorder
 - Mesured by Macbook pro 2020
   - CPU: 1.4 GHz Quad-Core Intel Core i5
   - MEM: 16 GB
+
 **Result**
+
 TPS: around `250`
 ```sh
 gtime -f '%P %Uu %Ss %er %MkB %C' "time" ./recorder
