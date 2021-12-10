@@ -19,6 +19,7 @@ The sample codes are in`samples` directory.
 **Condition**
 - single node
   - Using the auto generate project via [starport](https://github.com/tendermint/starport)
+- sending simple payment transaction
 - Mesured by Macbook pro 2020
   - CPU: 1.4 GHz Quad-Core Intel Core i5
   - MEM: 16 GB
@@ -52,6 +53,7 @@ gtime -f '%P %Uu %Ss %er %MkB %C' "time" ./recorder
 **Condition**
 - single node
   - Using [template node](https://github.com/substrate-developer-hub/substrate-front-end-template)
+- sending simple payment transaction
 - Mesured by Macbook pro 2020
   - CPU: 1.4 GHz Quad-Core Intel Core i5
   - MEM: 16 GB
