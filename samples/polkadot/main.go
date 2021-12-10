@@ -42,7 +42,7 @@ func main() {
 	var (
 		mesuringDuration = 30 * time.Second
 		queueSize        = 100
-		concurrency      = 1
+		concurrency      = 2
 		queue            = tps.NewQueue(queueSize)
 		closing          uint32
 		idlingDuration   uint32
