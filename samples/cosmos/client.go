@@ -220,8 +220,9 @@ func (c *CosmosClient) SendTx(ctx context.Context, privStr string, seq uint64, t
 		return nil, err
 	}
 
-	// res, err := c.clientHTTP.BroadcastTxSync(ctx, txBytes)
-	res, err := c.clientHTTP.BroadcastTxAsync(ctx, txBytes)
+	res, err := c.clientHTTP.BroadcastTxSync(ctx, txBytes)
+	// Note: In async case, response is returnd before TxCheck
+	// res, err := c.clientHTTP.BroadcastTxAsync(ctx, txBytes)
 	if errRes := client.CheckTendermintError(err, txBytes); errRes != nil {
 		return nil, err
 	}

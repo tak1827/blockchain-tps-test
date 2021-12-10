@@ -53,6 +53,7 @@ func (t *CosmTask) Do(ctx context.Context, client *CosmosClient, priv string, no
 			return errors.Wrap(rootErr, err.Error())
 		}
 		queue.Push(t)
+		return nil
 	}
 
 	logger.Info(fmt.Sprintf("succeed sending tx, hash: %s, nonce: %d", res.Hash, nonce))

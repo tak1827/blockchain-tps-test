@@ -53,6 +53,7 @@ func (t *PolkaTask) Do(ctx context.Context, client *PolkaClient, priv string, no
 			return errors.Wrap(rootErr, err.Error())
 		}
 		queue.Push(t)
+		return nil
 	}
 
 	logger.Info(fmt.Sprintf("succeed sending tx, hash: %s, nonce: %d", res.Hex(), nonce))
