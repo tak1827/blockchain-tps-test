@@ -18,7 +18,7 @@ The sample codes are in`samples` directory.
 ## Cosmos
 **Condition**
 - single node
-Using the auto generate project via [starport](https://github.com/tendermint/starport)
+  - Using the auto generate project via [starport](https://github.com/tendermint/starport)
 - Mesured by Macbook pro 2020
   - CPU: 1.4 GHz Quad-Core Intel Core i5
   - MEM: 16 GB
@@ -51,14 +51,14 @@ gtime -f '%P %Uu %Ss %er %MkB %C' "time" ./recorder
 ## Polkadot
 **Condition**
 - single node
-Using [template node](https://github.com/substrate-developer-hub/substrate-front-end-template)
+  - Using [template node](https://github.com/substrate-developer-hub/substrate-front-end-template)
 - Mesured by Macbook pro 2020
   - CPU: 1.4 GHz Quad-Core Intel Core i5
   - MEM: 16 GB
 **Result**
 TPS: around `250`
 ```sh
-2021/12/10 10:06:35 Connecting to ws://127.0.0.1:9944...
+gtime -f '%P %Uu %Ss %er %MkB %C' "time" ./recorder
 ------------------------------------------------------------------------------------
 ⛓  14 th Block Mind! txs(1725), total txs(1725), TPS(242.51), pendig txs(324)
 ------------------------------------------------------------------------------------
@@ -68,4 +68,5 @@ TPS: around `250`
 ------------------------------------------------------------------------------------
 ⛓  17 th Block Mind! txs(1591), total txs(6720), TPS(275.43), pendig txs(109)
        31.26 real        57.74 user         1.41 sys
+189% 57.74u 1.41s 31.27r 18632kB time ./recorder
 ```
