@@ -16,6 +16,7 @@ import (
 
 var (
 	Endpoint = "ws://127.0.0.1:9944"
+	// Endpoint = "ws://127.0.0.1:9945" // testnet
 
 	Seed1 = "//Alice"
 	Seed2 = "//Bob"
@@ -40,7 +41,7 @@ func createRandomAccounts(accNum int) []types.MultiAddress {
 
 func main() {
 	var (
-		mesuringDuration = 30 * time.Second
+		mesuringDuration = 60 * time.Second
 		queueSize        = 100
 		concurrency      = 2
 		queue            = tps.NewQueue(queueSize)

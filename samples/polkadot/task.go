@@ -14,7 +14,7 @@ import (
 const (
 	Polka tps.TaskType = iota
 
-	TaskRetryLimit = 100
+	TaskRetryLimit = 10
 )
 
 type PolkaTask struct {
@@ -43,12 +43,12 @@ func (t *PolkaTask) IncrementTryCount() error {
 func (t *PolkaTask) Do(ctx context.Context, client *PolkaClient, priv string, nonce uint64, queue *tps.Queue, logger tps.Logger) error {
 	res, rootErr := client.SendTx(ctx, priv, nonce, t.to, t.amount)
 	if rootErr != nil {
-		if strings.Contains(rootErr.Error(), "invalid sequence") {
+		if strings.Contains(rootErr.Error(), "Invalid Transaction") {
 			logger.Warn(fmt.Sprintf("nonce error, %s", rootErr.Error()))
 			return tps.ErrWrongNonce
 		}
 
-		logger.Warn(fmt.Sprintf("faild sending eth, err: %s", rootErr.Error()))
+		logger.Warn(fmt.Sprintf("faild sending, err: %s", rootErr.Error()))
 		if err := t.IncrementTryCount(); err != nil {
 			return errors.Wrap(rootErr, err.Error())
 		}
