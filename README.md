@@ -64,17 +64,25 @@ gtime -f '%P %Uu %Ss %er %MkB %C' "time" ./recorder
 
 **Result**
 
-TPS: around `250`
+TPS: around `500`
 ```sh
 gtime -f '%P %Uu %Ss %er %MkB %C' "time" ./recorder
 ------------------------------------------------------------------------------------
-⛓  14 th Block Mind! txs(1725), total txs(1725), TPS(242.51), pendig txs(324)
+⛓  2582 th Block Mind! txs(1470), total txs(11987), TPS(498.98), pendig txs(775)
 ------------------------------------------------------------------------------------
-⛓  15 th Block Mind! txs(1752), total txs(3477), TPS(279.21), pendig txs(134)
+⛓  2583 th Block Mind! txs(1462), total txs(13449), TPS(510.68), pendig txs(416)
 ------------------------------------------------------------------------------------
-⛓  16 th Block Mind! txs(1652), total txs(5129), TPS(269.28), pendig txs(240)
+⛓  2584 th Block Mind! txs(1433), total txs(14882), TPS(500.49), pendig txs(632)
 ------------------------------------------------------------------------------------
-⛓  17 th Block Mind! txs(1591), total txs(6720), TPS(275.43), pendig txs(109)
+⛓  2585 th Block Mind! txs(1441), total txs(16323), TPS(492.75), pendig txs(802)
+------------------------------------------------------------------------------------
+⛓  2586 th Block Mind! txs(1435), total txs(17758), TPS(501.20), pendig txs(490)
+------------------------------------------------------------------------------------
+⛓  2587 th Block Mind! txs(1461), total txs(19219), TPS(494.94), pendig txs(679)
+------------------------------------------------------------------------------------
+⛓  2588 th Block Mind! txs(1451), total txs(20670), TPS(502.19), pendig txs(348)
+------------------------------------------------------------------------------------
+⛓  2589 th Block Mind! txs(1378), total txs(22048), TPS(494.98), pendig txs(480)
        31.26 real        57.74 user         1.41 sys
 189% 57.74u 1.41s 31.27r 18632kB time ./recorder
 ```
