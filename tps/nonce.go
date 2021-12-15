@@ -19,9 +19,8 @@ func NewNonce(ctx context.Context, client Client, addr string) (Nonce, error) {
 }
 
 func (n *Nonce) Increment() uint64 {
-	current := atomic.LoadUint64(&n.current)
-	atomic.AddUint64(&n.current, 1)
-	return current
+	incremented := atomic.AddUint64(&n.current, 1)
+	return incremented - 1
 }
 
 func (n *Nonce) Reset(nonce uint64) {
