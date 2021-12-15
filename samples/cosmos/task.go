@@ -48,7 +48,7 @@ func (t *CosmTask) Do(ctx context.Context, client *CosmosClient, priv string, no
 			return tps.ErrWrongNonce
 		}
 
-		logger.Warn(fmt.Sprintf("faild sending eth, err: %s", rootErr.Error()))
+		logger.Warn(fmt.Sprintf("faild sending, err: %s", rootErr.Error()))
 		if err := t.IncrementTryCount(); err != nil {
 			return errors.Wrap(rootErr, err.Error())
 		}
