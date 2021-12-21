@@ -38,7 +38,7 @@ var (
 	Denom                = os.Getenv("DENOM")
 	AccountAddressPrefix = os.Getenv("ACCOUNT_PREFIX")
 
-	accNums = make(map[string]uint64, 3)
+	accNums = make(map[string]uint64)
 )
 
 type CosmosClient struct {

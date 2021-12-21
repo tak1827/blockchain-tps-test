@@ -17,9 +17,10 @@ import (
 var (
 	Endpoint = "tcp://localhost:26657"
 
-	PrivKey  = "3b2eb70cf00a779c4bfed132e0fb3f7f982013132d86e344b0e97c7507d0d7a4" // minden1ma5xdsl8jkju45fxv7tmzsvrya6uaqhsdfxde6
-	PrivKey2 = "cb7e1d0611d5c66461822afcbed4d677b19f9188541c62c534338679161e9aa9" // minden1hp5cugfmh8e57pqggaukmjhrsfx2lxt9nthf83
-	PrivKey3 = "098cc9ba1d5109b4b81fc06859dc99950617e9d50127ca940e8298bd9fb3c6eb" // minden13a85v9nqdz7n88k4k90u3pexd75s5fehr5d9f3
+	PrivKey  = "3b2eb70cf00a779c4bfed132e0fb3f7f982013132d86e344b0e97c7507d0d7a4"
+	PrivKey2 = "cb7e1d0611d5c66461822afcbed4d677b19f9188541c62c534338679161e9aa9"
+	PrivKey3 = "098cc9ba1d5109b4b81fc06859dc99950617e9d50127ca940e8298bd9fb3c6eb"
+	// PrivKey4 = "098cc9ba1d5109b4b81fc06859dc99950617e9d50127ca940e8298bd9fb3c6eb"
 
 	Timeout        = 15 * time.Second
 	MaxConcurrency = runtime.NumCPU() - 2
@@ -49,6 +50,7 @@ func main() {
 			PrivKey,
 			PrivKey2,
 			PrivKey3,
+			// PrivKey4,
 		}
 		testAddrs = createRandomAccounts(100)
 	)
@@ -87,7 +89,7 @@ func main() {
 		logger.Fatal("err NewWallet: ", err)
 	}
 
-	taskDo := func(t tps.Task) error {
+	taskDo := func(t tps.Task, id int) error {
 		task, ok := t.(*CosmTask)
 		if !ok {
 			return errors.New("unexpected task type")
@@ -97,7 +99,7 @@ func main() {
 		defer cancel()
 
 		var (
-			priv         = wallet.RotatePriv()
+			priv         = wallet.Priv(id)
 			currentNonce = wallet.IncrementNonce(priv)
 		)
 		if err = task.Do(ctx, &client, priv, currentNonce, &queue, logger); err != nil {
@@ -122,7 +124,7 @@ func main() {
 		logger.Warn(fmt.Sprintf("concurrency setting is over logical max(%d)", MaxConcurrency))
 	}
 	for i := 0; i < concurrency; i++ {
-		go worker.Run(&queue)
+		go worker.Run(&queue, i)
 	}
 
 	go func() {

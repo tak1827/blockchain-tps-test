@@ -15,11 +15,13 @@ import (
 )
 
 var (
-	Endpoint = "ws://127.0.0.1:9944"
-	// Endpoint = "ws://127.0.0.1:9945" // testnet
+	// Endpoint = "ws://127.0.0.1:9944"
+	Endpoint = "ws://127.0.0.1:9945" // testnet
 
-	Seed1 = "//Alice"
-	Seed2 = "//Bob"
+	Seed0 = "//Alice"
+	Seed1 = "//Charlie"
+	Seed2 = "//Dave"
+	Seed3 = "//Eve"
 
 	Timeout        = 15 * time.Second
 	MaxConcurrency = runtime.NumCPU() - 2
@@ -50,8 +52,10 @@ func main() {
 		logLevel         = tps.WARN_LEVEL // INFO_LEVEL, WARN_LEVEL, FATAL_LEVEL
 		logger           = tps.NewLogger(logLevel)
 		privs            = []string{
+			Seed0,
 			Seed1,
 			Seed2,
+			Seed3,
 		}
 		testAddrs = createRandomAccounts(100)
 	)
@@ -83,7 +87,7 @@ func main() {
 		logger.Fatal("err NewWallet: ", err)
 	}
 
-	taskDo := func(t tps.Task) error {
+	taskDo := func(t tps.Task, id int) error {
 		task, ok := t.(*PolkaTask)
 		if !ok {
 			return errors.New("unexpected task type")
@@ -93,7 +97,7 @@ func main() {
 		defer cancel()
 
 		var (
-			priv         = wallet.RotatePriv()
+			priv         = wallet.Priv(id)
 			currentNonce = wallet.IncrementNonce(priv)
 		)
 		if err = task.Do(ctx, &client, priv, currentNonce, &queue, logger); err != nil {
@@ -118,7 +122,7 @@ func main() {
 		logger.Warn(fmt.Sprintf("concurrency setting is over logical max(%d)", MaxConcurrency))
 	}
 	for i := 0; i < concurrency; i++ {
-		go worker.Run(&queue)
+		go worker.Run(&queue, i)
 	}
 
 	go func() {

@@ -14,7 +14,7 @@ import (
 const (
 	Cosm tps.TaskType = iota
 
-	TaskRetryLimit = 100
+	TaskRetryLimit = 10
 )
 
 type CosmTask struct {

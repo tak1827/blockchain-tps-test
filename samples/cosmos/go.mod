@@ -7,7 +7,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475 // indirect
 	github.com/sasha-s/go-deadlock v0.3.1 // indirect
-	github.com/tak1827/blockchain-tps-test v0.0.0-20211115014100-f005b471361d
+	github.com/tak1827/blockchain-tps-test v0.0.0-20211221091226-2e9468abc68f
 	github.com/tendermint/tendermint v0.34.14
 	golang.org/x/crypto v0.0.0-20211108221036-ceb1ce70b4fa // indirect
 	golang.org/x/net v0.0.0-20211108170745-6635138e15ea // indirect
