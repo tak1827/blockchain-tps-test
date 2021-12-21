@@ -2,10 +2,12 @@ package tps
 
 import (
 	"context"
+	"sync"
 	"sync/atomic"
 )
 
 type Nonce struct {
+	sync.Mutex
 	current uint64
 }
 
@@ -19,8 +21,10 @@ func NewNonce(ctx context.Context, client Client, addr string) (Nonce, error) {
 }
 
 func (n *Nonce) Increment() uint64 {
-	incremented := atomic.AddUint64(&n.current, 1)
-	return incremented - 1
+	n.Lock()
+	defer n.Unlock()
+
+	return atomic.AddUint64(&n.current, 1) - 1
 }
 
 func (n *Nonce) Reset(nonce uint64) {
