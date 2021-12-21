@@ -7,11 +7,11 @@ import (
 
 func Test_Run_Close(t *testing.T) {
 	var (
-		w = NewWorker(nil, 1)
+		w = NewWorker(nil)
 		q = NewQueue(1)
 	)
 
-	go w.Run(&q)
+	go w.Run(&q, 1)
 
 	time.Sleep(100 * time.Millisecond)
 

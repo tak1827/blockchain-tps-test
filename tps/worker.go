@@ -6,7 +6,7 @@ import (
 )
 
 var (
-	DefaultDoFunc = func(t Task) error {
+	DefaultDoFunc = func(t Task, id int) error {
 		return nil
 	}
 )
@@ -18,13 +18,12 @@ type GeneralWorker interface {
 }
 
 type Worker struct {
-	id         int
 	closing    uint32
-	doTaskFunc func(Task) error
+	doTaskFunc func(Task, int) error
 }
 
-func NewWorker(doTask func(Task) error, id int) Worker {
-	var doTaskFunc func(Task) error
+func NewWorker(doTask func(Task, int) error) Worker {
+	var doTaskFunc func(Task, int) error
 	if doTask != nil {
 		doTaskFunc = doTask
 	} else {
@@ -32,12 +31,11 @@ func NewWorker(doTask func(Task) error, id int) Worker {
 	}
 
 	return Worker{
-		id:         id,
 		doTaskFunc: doTaskFunc,
 	}
 }
 
-func (w *Worker) Run(queue *Queue) {
+func (w *Worker) Run(queue *Queue, id int) {
 	for {
 		if atomic.LoadUint32(&w.closing) == 1 {
 			break
@@ -47,7 +45,7 @@ func (w *Worker) Run(queue *Queue) {
 		if isEmpty {
 			continue
 		}
-		if err := w.doTaskFunc(task); err != nil {
+		if err := w.doTaskFunc(task, id); err != nil {
 			log.Fatal("err doTaskFunc", err)
 		}
 	}
