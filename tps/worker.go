@@ -18,11 +18,12 @@ type GeneralWorker interface {
 }
 
 type Worker struct {
+	id         int
 	closing    uint32
 	doTaskFunc func(Task) error
 }
 
-func NewWorker(doTask func(Task) error) Worker {
+func NewWorker(doTask func(Task) error, id int) Worker {
 	var doTaskFunc func(Task) error
 	if doTask != nil {
 		doTaskFunc = doTask
@@ -30,7 +31,10 @@ func NewWorker(doTask func(Task) error) Worker {
 		doTaskFunc = DefaultDoFunc
 	}
 
-	return Worker{doTaskFunc: doTaskFunc}
+	return Worker{
+		id:         id,
+		doTaskFunc: doTaskFunc,
+	}
 }
 
 func (w *Worker) Run(queue *Queue) {

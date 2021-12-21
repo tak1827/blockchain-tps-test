@@ -7,7 +7,7 @@ import (
 
 func Test_Run_Close(t *testing.T) {
 	var (
-		w = NewWorker(nil)
+		w = NewWorker(nil, 1)
 		q = NewQueue(1)
 	)
 
