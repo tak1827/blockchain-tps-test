@@ -41,6 +41,11 @@ func (w *Wallet) RotatePriv() string {
 	return w.privs[slot%uint32(len(w.privs))]
 }
 
+func (w *Wallet) Priv(index int) string {
+	i := index % len(w.privs)
+	return w.privs[i]
+}
+
 func (w *Wallet) IncrementNonce(priv string) uint64 {
 	return w.nonces[priv].Increment()
 }
