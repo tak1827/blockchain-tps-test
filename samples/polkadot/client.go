@@ -15,8 +15,6 @@ import (
 var (
 	_ tps.Client = (*PolkaClient)(nil)
 
-	accNums = make(map[string]uint64, 3)
-
 	meta        *types.Metadata
 	genesisHash types.Hash
 	rv          *types.RuntimeVersion
