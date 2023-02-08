@@ -8,6 +8,9 @@ fmt:
 test:
 	go test ./... -v -race
 
+run:
+	go run main
+
 build:
 	go build -o recorder -gcflags '-m'
 

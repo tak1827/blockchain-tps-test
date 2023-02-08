@@ -12,7 +12,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
-	"github.com/cosmos/cosmos-sdk/simapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
 	authsigning "github.com/cosmos/cosmos-sdk/x/auth/signing"
@@ -20,7 +19,11 @@ import (
 	txtypes "github.com/cosmos/cosmos-sdk/x/auth/tx"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+
 	// "github.com/davecgh/go-spew/spew"
+	"github.com/evmos/ethermint/app"
+	"github.com/evmos/ethermint/crypto/ethsecp256k1"
+	"github.com/evmos/ethermint/encoding"
 	"github.com/tak1827/blockchain-tps-test/tps"
 	rpchttp "github.com/tendermint/tendermint/rpc/client/http"
 	ctypes "github.com/tendermint/tendermint/rpc/core/types"
@@ -60,7 +63,7 @@ func init() {
 func NewClient(rpcURI string) (CosmosClient, error) {
 	var (
 		c      = CosmosClient{}
-		encCfg = simapp.MakeTestEncodingConfig()
+		encCfg = encoding.MakeConfig(app.ModuleBasics)
 		err    error
 	)
 
@@ -144,12 +147,29 @@ func PrivFromString(privStr string) (priv cryptotypes.PrivKey, err error) {
 	return
 }
 
+func ETHPrivFromString(privStr string) (priv cryptotypes.PrivKey, err error) {
+	priBytes, err := hex.DecodeString(privStr)
+	if err != nil {
+		return
+	}
+	priv = &ethsecp256k1.PrivKey{Key: priBytes}
+	return
+}
+
 func AccAddressFromPriv(priv cryptotypes.PrivKey) sdk.AccAddress {
 	return sdk.AccAddress(priv.PubKey().Address().Bytes())
 }
 
 func AccAddressFromPrivString(privStr string) (string, error) {
 	priv, err := PrivFromString(privStr)
+	if err != nil {
+		return "", err
+	}
+	return AccAddressFromPriv(priv).String(), nil
+}
+
+func EthsecpAddressFromPrivString(privStr string) (string, error) {
+	priv, err := ETHPrivFromString(privStr)
 	if err != nil {
 		return "", err
 	}
@@ -200,7 +220,7 @@ func (c *CosmosClient) BuildTx(msg sdk.Msg, priv cryptotypes.PrivKey, accSeq uin
 }
 
 func (c *CosmosClient) SendTx(ctx context.Context, privStr string, seq uint64, to sdk.AccAddress, amount int64) (*ctypes.ResultBroadcastTx, error) {
-	priv, err := PrivFromString(privStr)
+	priv, err := ETHPrivFromString(privStr)
 	if err != nil {
 		return nil, err
 	}

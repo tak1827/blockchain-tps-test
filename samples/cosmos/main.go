@@ -9,6 +9,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	// "github.com/davecgh/go-spew/spew"
 	"github.com/pkg/errors"
 	"github.com/tak1827/blockchain-tps-test/tps"
@@ -17,9 +18,9 @@ import (
 var (
 	Endpoint = "tcp://localhost:26657"
 
-	PrivKey  = "3b2eb70cf00a779c4bfed132e0fb3f7f982013132d86e344b0e97c7507d0d7a4"
-	PrivKey2 = "cb7e1d0611d5c66461822afcbed4d677b19f9188541c62c534338679161e9aa9"
-	PrivKey3 = "098cc9ba1d5109b4b81fc06859dc99950617e9d50127ca940e8298bd9fb3c6eb"
+	PrivKey = "a47ee56a459ab442c2bf725b2f1fc30e75c43b9869baf782c8db4b068072b21c"
+	// PrivKey2 = "cb7e1d0611d5c66461822afcbed4d677b19f9188541c62c534338679161e9aa9"
+	// PrivKey3 = "098cc9ba1d5109b4b81fc06859dc99950617e9d50127ca940e8298bd9fb3c6eb"
 	// PrivKey4 = "098cc9ba1d5109b4b81fc06859dc99950617e9d50127ca940e8298bd9fb3c6eb"
 
 	Timeout        = 15 * time.Second
@@ -40,7 +41,7 @@ func main() {
 	var (
 		mesuringDuration = 60 * time.Second
 		queueSize        = 100
-		concurrency      = 2
+		concurrency      = 1
 		queue            = tps.NewQueue(queueSize)
 		closing          uint32
 		idlingDuration   uint32
@@ -48,8 +49,8 @@ func main() {
 		logger           = tps.NewLogger(logLevel)
 		privs            = []string{
 			PrivKey,
-			PrivKey2,
-			PrivKey3,
+			// PrivKey2,
+			// PrivKey3,
 			// PrivKey4,
 		}
 		testAddrs = createRandomAccounts(100)
@@ -70,9 +71,9 @@ func main() {
 
 	addrs := make([]string, len(privs))
 	for i := range privs {
-		addr, err := AccAddressFromPrivString(privs[i])
+		addr, err := EthsecpAddressFromPrivString(privs[i])
 		if err != nil {
-			logger.Fatal("err AccAddressFromPrivString: ", err)
+			logger.Fatal("err EthsecpAddressFromPrivString: ", err)
 		}
 		addrs[i] = addr
 
