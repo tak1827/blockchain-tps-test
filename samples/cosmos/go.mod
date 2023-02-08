@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/cosmos/cosmos-sdk v0.46.7
 	github.com/pkg/errors v0.9.1
-	github.com/tak1827/blockchain-tps-test v0.0.0-20211221091226-2e9468abc68f
+	github.com/tak1827/blockchain-tps-test v0.0.2-0.20230208024433-b1362c1c531c
 	github.com/tendermint/tendermint v0.34.24
 	google.golang.org/grpc v1.51.0
 )

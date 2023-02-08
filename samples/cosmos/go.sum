@@ -518,8 +518,8 @@ github.com/subosito/gotenv v1.4.1 h1:jyEFiXpy21Wm81FBN71l9VoMMV8H8jG+qIK3GCpY6Qs
 github.com/subosito/gotenv v1.4.1/go.mod h1:ayKnFf/c6rvx/2iiLrJUk1e6plDbT3edrFNGqEflhK0=
 github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7 h1:epCh84lMvA70Z7CTTCmYQn2CKbY8j86K7/FAIr141uY=
 github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7/go.mod h1:q4W45IWZaF22tdD+VEXcAWRA037jwmWEB5VWYORlTpc=
-github.com/tak1827/blockchain-tps-test v0.0.0-20211221091226-2e9468abc68f h1:+yPyr7+H4Rxx5Cy/gvfpvoJ7v2V4YQ2zbl8LT+Zhdug=
-github.com/tak1827/blockchain-tps-test v0.0.0-20211221091226-2e9468abc68f/go.mod h1:j8djCS5V4aIlNYrP1xfwilzg9kSSfQS155WCLvWHLXQ=
+github.com/tak1827/blockchain-tps-test v0.0.2-0.20230208024433-b1362c1c531c h1:JUQYbd40ekzkl+dwmPPIhzxgec+VArwBWxsj2ME/6nQ=
+github.com/tak1827/blockchain-tps-test v0.0.2-0.20230208024433-b1362c1c531c/go.mod h1:ZlqtXFU/VE2F5lmLpgtQWHzCMuLF0DsA5XJMgpUZOlk=
 github.com/tendermint/btcd v0.1.1 h1:0VcxPfflS2zZ3RiOAHkBiFUcPvbtRj5O7zHmcJWHV7s=
 github.com/tendermint/btcd v0.1.1/go.mod h1:DC6/m53jtQzr/NFmMNEu0rxf18/ktVoVtMrnDD5pN+U=
 github.com/tendermint/crypto v0.0.0-20191022145703-50d29ede1e15 h1:hqAk8riJvK4RMWx1aInLzndwxKalgi5rTqgfXxOxbEI=

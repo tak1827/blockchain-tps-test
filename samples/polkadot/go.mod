@@ -6,7 +6,7 @@ require (
 	github.com/btcsuite/btcd v0.22.0-beta // indirect
 	github.com/centrifuge/go-substrate-rpc-client/v4 v4.0.0
 	github.com/pkg/errors v0.9.1
-	github.com/tak1827/blockchain-tps-test v0.0.0-20211221091648-90e1700f7a40
+	github.com/tak1827/blockchain-tps-test v0.0.2-0.20230208024433-b1362c1c531c
 )
 
 replace google.golang.org/grpc => google.golang.org/grpc v1.51.0
