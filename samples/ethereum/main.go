@@ -22,10 +22,12 @@ import (
 var (
 	Endpoint = "http://localhost:8545"
 
-	PrivKey = "3b2eb70cf00a779c4bfed132e0fb3f7f982013132d86e344b0e97c7507d0d7a4"
+	PrivKey = "a47ee56a459ab442c2bf725b2f1fc30e75c43b9869baf782c8db4b068072b21c"
 	// PrivKey2 = "cb7e1d0611d5c66461822afcbed4d677b19f9188541c62c534338679161e9aa9"
 	// PrivKey3 = "098cc9ba1d5109b4b81fc06859dc99950617e9d50127ca940e8298bd9fb3c6eb"
 	// PrivKey4 = "098cc9ba1d5109b4b81fc06859dc99950617e9d50127ca940e8298bd9fb3c6eb"
+
+	ContractAddress = common.HexToAddress("0x0F7220987ed9918FFb39C09ED1166b253264b10d")
 
 	Timeout        = 15 * time.Second
 	MaxConcurrency = runtime.NumCPU() - 2
@@ -49,7 +51,7 @@ func main() {
 		ctx              = context.Background()
 		mesuringDuration = 60 * time.Second
 		queueSize        = 100
-		concurrency      = 2
+		concurrency      = 1
 		queue            = tps.NewQueue(queueSize)
 		closing          uint32
 		idlingDuration   uint32
@@ -144,13 +146,13 @@ func main() {
 
 			// calldate of mint nft
 			var (
-				to       = testAddrs[count%len(testAddrs)]
+				account  = testAddrs[count%len(testAddrs)]
 				tokenId  = big.NewInt(int64(count))
-				input, _ = parsed.Pack("safeMint", []interface{}{tokenId, to, ""}...)
+				input, _ = parsed.Pack("safeMint", []interface{}{tokenId, account, ""}...)
 				gasLimit = uint64(100000) // gaslimit of mint nft
 			)
 			queue.Push(&EthTask{
-				to:       to,
+				to:       ContractAddress,
 				amount:   0,
 				input:    input,
 				gasLimit: gasLimit,

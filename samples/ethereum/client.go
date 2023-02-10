@@ -6,7 +6,6 @@ import (
 	"strings"
 	"time"
 
-	// "github.com/davecgh/go-spew/spew"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -61,7 +60,7 @@ func NewClient(ctx context.Context, endpoint string) (c EthClient, err error) {
 		}
 	}
 
-	header, err := c.latestHeader(ctx)
+	header, err := c.ethclient.HeaderByNumber(ctx, nil)
 	if err != nil {
 		return
 	}
@@ -76,35 +75,21 @@ func NewClient(ctx context.Context, endpoint string) (c EthClient, err error) {
 	return
 }
 
-func (c EthClient) Nonce(ctx context.Context, priv string) (nonce uint64, err error) {
-	privKey, err := crypto.HexToECDSA(priv)
-	if err != nil {
-		return
-	}
-
-	account := crypto.PubkeyToAddress(privKey.PublicKey)
-	nonce, err = c.ethclient.NonceAt(ctx, account, nil)
+func (c EthClient) Nonce(ctx context.Context, address string) (nonce uint64, err error) {
+	nonce, err = c.ethclient.NonceAt(ctx, common.HexToAddress(address), nil)
 	return
 }
 
 func (c EthClient) LatestBlockHeight(ctx context.Context) (uint64, error) {
-	header, err := c.latestHeader(ctx)
-	if err != nil {
-		return 0, err
-	}
-	return header.Number.Uint64(), nil
+	return c.ethclient.BlockNumber(ctx)
 }
 
 func (c EthClient) CountTx(ctx context.Context, height uint64) (int, error) {
-	header, err := c.latestHeader(ctx)
+	block, err := c.ethclient.BlockByNumber(ctx, big.NewInt(int64(height)))
 	if err != nil {
 		return 0, err
 	}
-	count, err := c.ethclient.TransactionCount(ctx, header.Hash())
-	if err != nil {
-		return 0, err
-	}
-	return int(count), nil
+	return len(block.Transactions()), nil
 }
 
 func (c EthClient) CountPendingTx(ctx context.Context) (int, error) {
@@ -129,10 +114,6 @@ func (c *EthClient) SendTx(ctx context.Context, priv string, nonce uint64, to co
 	}
 
 	return signedTx, nil
-}
-
-func (c EthClient) latestHeader(ctx context.Context) (*types.Header, error) {
-	return c.ethclient.HeaderByNumber(ctx, nil)
 }
 
 func (c *EthClient) isSupportEIP1559(ctx context.Context) (bool, error) {
