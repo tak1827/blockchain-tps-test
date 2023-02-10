@@ -3,5 +3,6 @@ go 1.19
 use (
 	./
 	./samples/cosmos
+	./samples/ethereum
 	./samples/polkadot
 )
