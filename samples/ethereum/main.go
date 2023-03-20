@@ -22,12 +22,12 @@ import (
 var (
 	Endpoint = "http://localhost:8545"
 
-	PrivKey = "a47ee56a459ab442c2bf725b2f1fc30e75c43b9869baf782c8db4b068072b21c"
-	// PrivKey2 = "cb7e1d0611d5c66461822afcbed4d677b19f9188541c62c534338679161e9aa9"
-	// PrivKey3 = "098cc9ba1d5109b4b81fc06859dc99950617e9d50127ca940e8298bd9fb3c6eb"
-	// PrivKey4 = "098cc9ba1d5109b4b81fc06859dc99950617e9d50127ca940e8298bd9fb3c6eb"
+	PrivKey  = "10CD36EB1C4D85EA12C4CEB457EE6B87CA4A653E78B0275B93DDE95ECE21AAC0"
+	PrivKey2 = "AF3474C24F7F4BCC2E7F01ABCCB245852E0564E2FC4E99133BCB5F64882CF8EB"
+	PrivKey3 = "8F0F19CAC1178D1990DD6840FACB3F9CD6E09A9E08EFFF106AC0069EF180092D"
+	PrivKey4 = "445C97786D9478F8970876451B52226D9FEE34E750711297B5787192676B39CD"
 
-	ContractAddress = common.HexToAddress("0x0F7220987ed9918FFb39C09ED1166b253264b10d")
+	ContractAddress = common.HexToAddress("0x89FB319f064cf99a7c5bc7b69d7064ADCFb990e9")
 
 	Timeout        = 15 * time.Second
 	MaxConcurrency = runtime.NumCPU() - 2
@@ -59,9 +59,9 @@ func main() {
 		logger           = tps.NewLogger(logLevel)
 		privs            = []string{
 			PrivKey,
-			// PrivKey2,
-			// PrivKey3,
-			// PrivKey4,
+			PrivKey2,
+			PrivKey3,
+			PrivKey4,
 		}
 		testAddrs = createRandomAccounts(100)
 	)
